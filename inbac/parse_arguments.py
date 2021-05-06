@@ -49,7 +49,7 @@ Left Arrow or Middle Mouse Button - go to previous picture\n"""
                         help="define the croped image format")
     parser.add_argument("-q", "--image_quality", type=int,
                         help="define the croped image quality", default=100)
-
+    parser.add_argument("-cf", "--crop_file", type=str, default="crop_info.txt")
     args = parser.parse_args()
 
     return args

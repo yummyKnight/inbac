@@ -152,8 +152,9 @@ class Controller():
             self.model.selection_box)
         box: Tuple[int, int, int, int] = self.get_real_box(
             selected_box, self.model.current_image.size, self.model.canvas_image_dimensions)
+        img_name: str = self.model.images[self.model.current_file]
         new_filename: str = self.find_available_name(
-            self.model.args.output_dir, self.model.images[self.model.current_file])
+            self.model.args.output_dir, img_name)
         saved_image: Image = self.model.current_image.copy().crop(box)
         if self.model.args.resize:
             saved_image = saved_image.resize(
@@ -168,6 +169,12 @@ class Controller():
                 new_filename),
             self.model.args.image_format,
             quality=self.model.args.image_quality)
+
+        file_name = os.path.join(self.model.args.output_dir, self.model.args.crop_file)
+        save_msg = f"{img_name}, {selected_box[0]}, {selected_box[1]}, {selected_box[2]}, {selected_box[3]}\n"
+        with open(file_name, "a+", encoding="utf-8") as f:
+            f.write(save_msg)
+        print("Image cropped with save msg = ", save_msg)
         self.clear_selection_box()
         return True
 
@@ -207,8 +214,8 @@ class Controller():
     @staticmethod
     def coordinates_in_selection_box(
             coordinates: Tuple[int, int], selection_box: Tuple[int, int]) -> bool:
-        return (coordinates[0] > selection_box[0] and coordinates[0] < selection_box[2]
-                and coordinates[1] > selection_box[1] and coordinates[1] < selection_box[3])
+        return (selection_box[0] < coordinates[0] < selection_box[2]
+                and selection_box[1] < coordinates[1] < selection_box[3])
 
     @staticmethod
     def find_available_name(directory: str, filename: str) -> str:
@@ -217,11 +224,11 @@ class Controller():
             return filename
         for num in itertools.count(2):
             if not os.path.isfile(
-                os.path.join(
-                    directory,
-                    name +
-                    str(num) +
-                    extension)):
+                    os.path.join(
+                        directory,
+                        name +
+                        str(num) +
+                        extension)):
                 return name + str(num) + extension
 
     @staticmethod
@@ -309,6 +316,7 @@ class Controller():
                                                   original_image_size[1] /
                                                   displayed_image_size[1]), int(selected_box[2] *
                                                                                 original_image_size[0] /
-                                                                                displayed_image_size[0]), int(selected_box[3] *
-                                                                                                              original_image_size[1] /
-                                                                                                              displayed_image_size[1]))
+                                                                                displayed_image_size[0]),
+                int(selected_box[3] *
+                    original_image_size[1] /
+                    displayed_image_size[1]))
